@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Admin Copilot</title>
+</head>
+
+<body>
+  <main>
+    <h1>Life Admin Copilot</h1>
+
+    <div id="error-container" style="display: none;">
+      <h2>Error</h2>
+      <div id="error-message"></div>
+    </div>
+
+    <div id="todo-list">No checklist yet</div>
+
+    <div id="chat-history"></div>
+
+    <div id="input-container">
+      <input type="text" id="message-input" placeholder="Type your message here..." style="width: 400px;" />
+      <button id="send-button"><img src="/src/assets/send.svg" alt="Back"></button>
+    </div>
+
+    <div class="token-usage">
+      <div id="token-summarization">100% left before summarization</div>
+      <div id="token-limit">100% left before limit</div>
+    </div>
+  </main>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

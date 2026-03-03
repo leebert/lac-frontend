@@ -1,0 +1,84 @@
+@import "./normalize.css";
+@import "./tokens.css";
+
+body {
+    background-color: var(--color-bg);
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: center;
+    width: 100vw;
+}
+
+#chat-history {
+    background-color: #fff;
+    border: solid 1px var(--color-border);
+    border-radius: var(--radius);
+    flex: 1;
+    padding: var(--padding-main);
+}
+
+h1 {
+    margin: 0;
+    padding-left: var(--radius);
+}
+
+#input-container {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    gap: calc(var(--padding-main)*0.5);
+    justify-content: center;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--padding-main);
+    height: 100%;
+    padding: var(--margin-main) 0;
+    width: 50vw;
+}
+
+#message-input {
+    background-color: #fff;
+    border: solid 1px var(--color-border);
+    border-radius: calc(var(--radius)*2);
+    flex: 1;
+    height: var(--ui-dimension);
+    padding: 0 var(--padding-main);
+}
+
+#send-button {
+    align-items: center;
+    background-color: var(--color-action);
+    border: solid 2px var(--color-action-border);
+    border-radius: calc(var(--radius)*2);
+    cursor: pointer;
+    display: flex;
+    height: var(--ui-dimension);
+    justify-content: center;
+    width: var(--ui-dimension);
+}
+
+#send-button:active {
+    transform: scale(0.95);
+}
+
+#send-button img {
+    height: 18px;
+    width: 18px;
+}
+
+#todo-list {
+    border: solid 1px var(--color-border);
+    border-radius: var(--radius);
+    padding: var(--padding-main);
+}
+
+.token-usage {
+    display: flex;
+    gap: var(--padding-main);
+    padding-left: var(--radius);
+}

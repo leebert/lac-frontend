@@ -1,0 +1,13 @@
+:root {
+    --color-action: #E6D8FB;
+    --color-action-border: #333;
+    --color-bg: #efefef;
+    --color-border: #33333333;
+    --color-copy: #333;
+
+    --radius: 1rem;
+    --margin-main: 3rem;
+    --padding-main: 1rem;
+
+    --ui-dimension: 44px;
+}
