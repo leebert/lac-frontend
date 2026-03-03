@@ -1,4 +1,5 @@
 import './style.css'
+import type { AgentResponse, ChecklistItem, MessageRequest } from './types'
 
 // API Configuration
 const API_BASE_URL = 'http://localhost:8080'; // Update this to your backend URL
@@ -18,17 +19,6 @@ const sendButton = document.getElementById('send-button') as HTMLButtonElement;
 const thinkingIndicator = document.createElement('div') as HTMLDivElement;
 thinkingIndicator.classList.add('thinking-div');
 thinkingIndicator.innerHTML = '<strong>Agent:</strong> 🤔';
-
-// Interfaces
-interface AgentResponse {
-  sessionId: string;
-  agentMessage: string;
-  checklist?: Array<{ task: string; completed: boolean }>;
-  usage: {
-    remainingBeforeSummarization: number;
-    remainingBeforeLimit: number;
-  };
-}
 
 // Event Listeners
 sendButton.addEventListener('click', handleSendMessage);
@@ -87,15 +77,17 @@ async function handleSendMessage() {
 }
 
 async function sendMessage(message: string): Promise<AgentResponse> {
+  const requestBody: MessageRequest = {
+    sessionId,
+    message,
+  };
+
   const response = await fetch(`${API_BASE_URL}/api/message`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      sessionId,
-      message,
-    }),
+    body: JSON.stringify(requestBody),
   });
   
   if (!response.ok) {
@@ -114,15 +106,48 @@ function addMessageToChat(role: 'user' | 'assistant', content: string) {
   chatHistory.scrollTop = chatHistory.scrollHeight;
 }
 
-function updateTodoList(checklist: Array<{ task: string; completed: boolean }>) {
+function updateTodoList(checklist: ChecklistItem[]) {
   if (checklist.length === 0) {
     todoList.innerHTML = 'No checklist yet';
     return;
   }
   
-  todoList.innerHTML = '<ul>' + checklist.map(item => 
-    `<li>${escapeHtml(item.task)} ${item.completed ? '✓' : ''}</li>`
-  ).join('') + '</ul>';
+  const categoryEmojis: Record<string, string> = {
+    health: '🏥',
+    finance: '💰',
+    travel: '✈️',
+    household: '🏠',
+    work: '💼',
+    personal: '👤'
+  };
+
+  const priorityColors: Record<string, string> = {
+    high: '#ff4444',
+    medium: '#ffaa44',
+    low: '#44aa44'
+  };
+  
+  todoList.innerHTML = '<ul style="list-style: none; padding: 0;">' + 
+    checklist.map(item => {
+      const emoji = categoryEmojis[item.category] || '📋';
+      const color = priorityColors[item.priority] || '#666';
+      const dueDate = item.dueDate ? ` (Due: ${item.dueDate})` : '';
+      
+      return `
+        <li style="margin-bottom: 15px; padding: 10px; border-left: 3px solid ${color}; background: #f9f9f9;">
+          <strong>${emoji} ${escapeHtml(item.title)}</strong>
+          <div style="font-size: 0.9em; color: #666; margin-top: 5px;">
+            ${escapeHtml(item.description)}
+          </div>
+          <div style="font-size: 0.8em; margin-top: 5px;">
+            <span style="color: ${color};">Priority: ${item.priority}</span>
+            <span style="margin-left: 10px;">Category: ${item.category}</span>
+            ${dueDate}
+          </div>
+        </li>
+      `;
+    }).join('') + 
+    '</ul>';
 }
 
 function updateTokenUsage(usage: { remainingBeforeSummarization: number; remainingBeforeLimit: number }) {
