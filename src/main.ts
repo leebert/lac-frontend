@@ -14,19 +14,22 @@ const tokenSummarization = document.getElementById('token-summarization') as HTM
 const tokenLimit = document.getElementById('token-limit') as HTMLDivElement;
 const errorContainer = document.getElementById('error-container') as HTMLDivElement;
 const errorMessage = document.getElementById('error-message') as HTMLDivElement;
-const messageInput = document.getElementById('message-input') as HTMLInputElement;
+const errorDismissButton = document.getElementById('error-dismiss-button') as HTMLButtonElement;
+const messageInput = document.getElementById('message-input') as HTMLTextAreaElement;
 const sendButton = document.getElementById('send-button') as HTMLButtonElement;
 const thinkingIndicator = document.createElement('div') as HTMLDivElement;
-thinkingIndicator.classList.add('thinking-div');
-thinkingIndicator.innerHTML = '<strong>Agent:</strong> 🤔';
+thinkingIndicator.classList.add('chat-agent');
+thinkingIndicator.innerHTML = '<span class="chat-agent-title">Agent</span>🤔';
 
 // Event Listeners
 sendButton.addEventListener('click', handleSendMessage);
 messageInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
     handleSendMessage();
   }
 });
+errorDismissButton.addEventListener('click', hideError);
 
 // Functions
 async function handleSendMessage() {
@@ -44,17 +47,34 @@ async function handleSendMessage() {
   
   // Add user message to chat
   addMessageToChat('user', message);
+  thinkingIndicator.innerHTML = '<span class="chat-agent-title">Agent</span>🤔';
   chatHistory.appendChild(thinkingIndicator);
   
   try {
-    const response = await sendMessage(message);
+    const response = await sendMessageSSE(message, (mode: string) => {
+      // Update thinking indicator with mode
+      const modeLabels: Record<string, string> = {
+        clarification: 'Clarifying',
+        planning: 'Planning',
+        refinement: 'Refining',
+        error: 'Processing'
+      };
+      const modeLabel = modeLabels[mode] || 'Thinking';
+      thinkingIndicator.innerHTML = `<span class="chat-agent-title">Agent</span>🤔 ${modeLabel}...`;
+    });
     thinkingIndicator.remove();
     
     // Update session ID
     sessionId = response.sessionId;
     
-    // Add agent response to chat
-    addMessageToChat('assistant', response.agentMessage);
+    // Check if response contains an error (for test purposes)
+    if (response.error) {
+      // Show error in chat history instead of modal
+      addMessageToChat('assistant', `⚠️ Error: ${response.error}`);
+    } else {
+      // Add agent response to chat
+      addMessageToChat('assistant', response.agentMessage);
+    }
     
     // Update todo list if provided
     if (response.checklist) {
@@ -67,6 +87,7 @@ async function handleSendMessage() {
     // Clear input
     messageInput.value = '';
   } catch (error) {
+    thinkingIndicator.remove();
     showError(error instanceof Error ? error.message : 'Failed to send message');
   } finally {
     // Re-enable input
@@ -76,32 +97,99 @@ async function handleSendMessage() {
   }
 }
 
-async function sendMessage(message: string): Promise<AgentResponse> {
+async function sendMessageSSE(message: string, onMode: (mode: string) => void): Promise<AgentResponse> {
   const requestBody: MessageRequest = {
     sessionId,
     message,
   };
 
-  const response = await fetch(`${API_BASE_URL}/api/message`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody),
+  return new Promise((resolve, reject) => {
+    fetch(`${API_BASE_URL}/api/message-stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(errorData => {
+          throw new Error(errorData.error || `HTTP ${response.status}`);
+        }).catch(() => {
+          throw new Error(`HTTP ${response.status}`);
+        });
+      }
+
+      if (!response.body) {
+        throw new Error('Response body is null');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      const processStream = (): Promise<void> => {
+        return reader.read().then(({ done, value }) => {
+          if (done) {
+            return;
+          }
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.startsWith('event: ')) {
+              const event = line.substring(7).trim();
+              
+              if (event === 'mode') {
+                // Next line should be the data
+                continue;
+              } else if (event === 'response') {
+                // Next line should be the data
+                continue;
+              } else if (event === 'error') {
+                // Next line should be the error data
+                continue;
+              }
+            } else if (line.startsWith('data: ')) {
+              const data = line.substring(6);
+              try {
+                const parsed = JSON.parse(data);
+                
+                // Check what type of event this was
+                if (parsed.mode) {
+                  onMode(parsed.mode);
+                } else if (parsed.sessionId) {
+                  // This is the final response
+                  resolve(parsed as AgentResponse);
+                  return;
+                } else if (parsed.error) {
+                  reject(new Error(parsed.error));
+                  return;
+                }
+              } catch (e) {
+                // Ignore parse errors for empty lines
+              }
+            }
+          }
+
+          return processStream();
+        });
+      };
+
+      return processStream();
+    })
+    .catch(error => {
+      reject(error);
+    });
   });
-  
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(errorData.error || `HTTP ${response.status}`);
-  }
-  
-  return response.json();
 }
 
 function addMessageToChat(role: 'user' | 'assistant', content: string) {
   const messageElement = document.createElement('div');
-  messageElement.style.marginBottom = '10px';
-  messageElement.innerHTML = `<strong>${role === 'user' ? 'You' : 'Agent'}:</strong> ${escapeHtml(content)}`;
+  messageElement.classList.add(role === 'user' ? 'chat-self' : 'chat-agent');
+  messageElement.innerHTML = `${role === 'user' ? '' : '<span class="chat-agent-title">Agent</span>'}${escapeHtml(content)}`;
   chatHistory.appendChild(messageElement);
   chatHistory.scrollTop = chatHistory.scrollHeight;
 }
@@ -127,21 +215,21 @@ function updateTodoList(checklist: ChecklistItem[]) {
     low: '#44aa44'
   };
   
-  todoList.innerHTML = '<ul style="list-style: none; padding: 0;">' + 
+  todoList.innerHTML = '<ul>' + 
     checklist.map(item => {
       const emoji = categoryEmojis[item.category] || '📋';
       const color = priorityColors[item.priority] || '#666';
-      const dueDate = item.dueDate ? ` (Due: ${item.dueDate})` : '';
+      const dueDate = item.dueDate ? ` Due: ${item.dueDate}` : '';
       
       return `
-        <li style="margin-bottom: 15px; padding: 10px; border-left: 3px solid ${color}; background: #f9f9f9;">
-          <strong>${emoji} ${escapeHtml(item.title)}</strong>
-          <div style="font-size: 0.9em; color: #666; margin-top: 5px;">
+        <li>
+          <h4>${emoji} ${escapeHtml(item.title)}</h4>
+          <div>
             ${escapeHtml(item.description)}
           </div>
-          <div style="font-size: 0.8em; margin-top: 5px;">
+          <div>
             <span style="color: ${color};">Priority: ${item.priority}</span>
-            <span style="margin-left: 10px;">Category: ${item.category}</span>
+            <span>Category: ${item.category}</span>
             ${dueDate}
           </div>
         </li>
@@ -150,14 +238,20 @@ function updateTodoList(checklist: ChecklistItem[]) {
     '</ul>';
 }
 
-function updateTokenUsage(usage: { remainingBeforeSummarization: number; remainingBeforeLimit: number }) {
-  tokenSummarization.innerHTML = `${usage.remainingBeforeSummarization}% before summarization`;
-  tokenLimit.innerHTML = `${usage.remainingBeforeLimit}% before limit`;
+function updateTokenUsage(usage: { 
+  remainingBeforeSummarization: number; 
+  remainingBeforeLimit: number;
+  currentTokens: number;
+  maxTokens: number;
+  summarizationThreshold: number;
+}) {
+  tokenSummarization.innerHTML = `${usage.remainingBeforeSummarization}% before summarization (${usage.currentTokens.toLocaleString()}/${usage.summarizationThreshold.toLocaleString()} tokens)`;
+  tokenLimit.innerHTML = `${usage.remainingBeforeLimit}% before limit (${usage.currentTokens.toLocaleString()}/${usage.maxTokens.toLocaleString()} tokens)`;
 }
 
 function showError(message: string) {
   errorMessage.textContent = message;
-  errorContainer.style.display = 'block';
+  errorContainer.style.display = 'fixed';
 }
 
 function hideError() {

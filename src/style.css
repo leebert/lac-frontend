@@ -7,8 +7,8 @@ body {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    justify-content: center;
     width: 100vw;
+    overflow: hidden;
 }
 
 #chat-history {
@@ -17,15 +17,55 @@ body {
     border-radius: var(--radius);
     flex: 1;
     padding: var(--padding-main);
+    overflow: scroll;
+}
+
+.chat-self {
+    background-color: var(--color-self);
+    border-radius: var(--radius);
+    display: flex;
+    justify-self: end;
+    margin-bottom: var(--padding-main);
+    max-width: 80%;
+    padding: var(--padding-main);
+}
+
+.chat-agent {
+    background-color: var(--color-agent);
+    border-radius: var(--radius);
+    display: inline-flex;
+    flex-direction: column;
+    margin-bottom: var(--padding-main);
+    max-width: 80%;
+    padding: var(--padding-main);
+}
+
+.chat-agent-title {
+    font-weight: 800;
+    margin-bottom: calc(var(--padding-main)*0.5);
+}
+
+.grid-column {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--padding-main)*0.5);
+    height: 85vh;
 }
 
 h1 {
+    margin-top: var(--padding-main);
+}
+
+h2 {
+    margin: 0 0 0 calc(var(--padding-main)*0.5);
+}
+
+h4 {
     margin: 0;
-    padding-left: var(--radius);
 }
 
 #input-container {
-    align-items: center;
+    align-items: flex-end;
     display: flex;
     flex-direction: row;
     gap: calc(var(--padding-main)*0.5);
@@ -33,12 +73,12 @@ h1 {
 }
 
 main {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 60% 1fr;
     gap: var(--padding-main);
-    height: 100%;
-    padding: var(--margin-main) 0;
-    width: 50vw;
+    height: 85vh;
+    padding: 0 0 var(--margin-main) 0;
+    width: 90vw;
 }
 
 #message-input {
@@ -47,7 +87,10 @@ main {
     border-radius: calc(var(--radius)*2);
     flex: 1;
     height: var(--ui-dimension);
-    padding: 0 var(--padding-main);
+    max-height: 200px;
+    padding: calc(var(--padding-main)*0.75) var(--padding-main);
+    box-sizing: border-box;
+    resize: none;
 }
 
 #send-button {
@@ -75,10 +118,77 @@ main {
     border: solid 1px var(--color-border);
     border-radius: var(--radius);
     padding: var(--padding-main);
+    overflow: scroll;
 }
 
 .token-usage {
     display: flex;
     gap: var(--padding-main);
+    font-size: 0.8rem;
     padding-left: var(--radius);
+}
+
+/* Checklist styles */
+ul {
+     list-style: none;
+     margin: 0;
+     padding: 0;
+}
+
+li {
+    background-color: var(--color-bg);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--padding-main)*0.5);
+    margin-bottom: calc(var(--padding-main)*2);
+}
+
+li div:nth-child(3) {
+    display: flex;
+    flex-direction: row;
+    font-size: 0.8rem;
+    gap: calc(var(--padding-main)*0.5);
+}
+
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #fff;
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--padding-main)*1.5);
+    padding: calc(var(--padding-main)*1.5);
+    width: 25vw;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-button {
+    background-color: var(--color-action);
+    border: solid 2px var(--color-action-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    padding: 10px 30px;
+    width: 100%;
+}
+
+.modal-button:hover {
+    opacity: 0.9;
+}
+
+.modal-button:active {
+    transform: scale(0.98);
 }

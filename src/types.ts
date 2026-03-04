@@ -27,9 +27,13 @@ export interface AgentResponse {
   sessionId: string;
   agentMessage: string;
   checklist?: ChecklistItem[];
+  error?: string;  // Error message for test purposes
   usage: {
     remainingBeforeSummarization: number;
     remainingBeforeLimit: number;
+    currentTokens: number;
+    maxTokens: number;
+    summarizationThreshold: number;
   };
 }
 
