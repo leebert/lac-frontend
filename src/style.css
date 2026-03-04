@@ -1,11 +1,17 @@
 @import "./normalize.css";
 @import "./tokens.css";
+@import url('https://fonts.googleapis.com/css2?family=Sofia+Sans:ital,wght@0,1..1000;1,1..1000&display=swap');
 
 body {
     background-color: var(--color-bg);
     align-items: center;
     display: flex;
     flex-direction: column;
+    font-family: var(--font-main);
+    font-optical-sizing: auto;
+    font-weight: var(--font-weight-regular);
+    font-size: 1rem;
+    font-style: normal;
     height: 100vh;
     width: 100vw;
     overflow: hidden;
@@ -42,7 +48,7 @@ body {
 
 .chat-agent-title {
     font-weight: 800;
-    margin-bottom: calc(var(--padding-main)*0.5);
+    margin-bottom: calc(var(--padding-main)*0.3);
 }
 
 .grid-column {
@@ -57,7 +63,9 @@ h1 {
 }
 
 h2 {
+    font-size: 1.15rem;
     margin: 0 0 0 calc(var(--padding-main)*0.5);
+    text-transform: uppercase;
 }
 
 h4 {
@@ -93,6 +101,12 @@ main {
     resize: none;
 }
 
+#message-input::placeholder {
+    font-size: 0.9rem;
+    font-style: italic;
+    opacity: 1;
+}
+
 #send-button {
     align-items: center;
     background-color: var(--color-action);
@@ -103,10 +117,12 @@ main {
     height: var(--ui-dimension);
     justify-content: center;
     width: var(--ui-dimension);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
 }
 
 #send-button:active {
-    transform: scale(0.95);
+    transform: translate(0, 2px) scale(0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 #send-button img {
@@ -123,8 +139,11 @@ main {
 
 .token-usage {
     display: flex;
+    color: var(--color-action-border);
     gap: var(--padding-main);
     font-size: 0.8rem;
+    font-weight: var(--font-weight-medium);
+    opacity: 0.5;
     padding-left: var(--radius);
 }
 
@@ -183,6 +202,12 @@ li div:nth-child(3) {
     cursor: pointer;
     padding: 10px 30px;
     width: 100%;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.modal-button:active {
+    transform: translate(0, 2px) scale(0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .modal-button:hover {
