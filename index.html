@@ -24,7 +24,7 @@
     <div id="chat-history"></div>
 
     <div id="input-container">
-      <textarea id="message-input" placeholder="Ask for guidance on handling logistical tasks like registering to vote" rows="1"></textarea>
+      <textarea id="message-input" class="input" placeholder="Ask for guidance on handling logistical tasks like registering to vote" rows="1"></textarea>
       <button id="send-button"><img src="/src/assets/send.svg" alt="Back"></button>
     </div>
 
@@ -40,6 +40,17 @@
       <div id="todo-list">Ask for advice to see next steps.</div>
     </div>
   </main>
+
+  <div id="password-modal" class="password-modal hidden">
+    <div class="password-modal-content">
+      <h2>Protected Demo</h2>
+      <div class="password-input-container">
+        <input type="password" id="password-input" class="input" placeholder="Password" autocomplete="off" />
+        <button id="password-submit">Submit</button>
+      </div>
+      <div id="password-error" class="password-error hidden"></div>
+    </div>
+  </div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 

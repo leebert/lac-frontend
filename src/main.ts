@@ -1,11 +1,10 @@
 import './style.css'
+import { createLacAuth } from './auth.ts';
 import type { AgentResponse, ChecklistItem, MessageRequest } from './types'
 
-// API Configuration
-const API_BASE_URL = 'http://localhost:8080'; // Update this to your backend URL
-
-// State
+const API_ENDPOINT = `${import.meta.env.VITE_GOOLGE_CLOUD_URL}/api/message-stream`;
 let sessionId: string | null = null;
+let lacAuth: ReturnType<typeof createLacAuth> | null = null;
 
 // DOM Elements
 const chatHistory = document.getElementById('chat-history') as HTMLDivElement;
@@ -103,16 +102,30 @@ async function sendMessageSSE(message: string, onMode: (mode: string) => void): 
     message,
   };
 
+  const authToken = lacAuth?.getAuthToken();
+  
+  if (!authToken) {
+    throw new Error('Not authenticated');
+  }
+
   return new Promise((resolve, reject) => {
-    fetch(`${API_BASE_URL}/api/message-stream`, {
+    fetch(`${API_ENDPOINT}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
       },
       body: JSON.stringify(requestBody),
     })
     .then(response => {
       if (!response.ok) {
+        // Handle 401 Unauthorized
+        if (response.status === 401) {
+          lacAuth?.handleUnauthorized();
+          reject(new Error('Authentication required. Please log in again.'));
+          return Promise.reject(new Error('Unauthorized'));
+        }
+        
         return response.json().then(errorData => {
           throw new Error(errorData.error || `HTTP ${response.status}`);
         }).catch(() => {
@@ -265,5 +278,12 @@ function escapeHtml(text: string): string {
   return div.innerHTML;
 }
 
-// Initial focus
-messageInput.focus();
+// Initialize the app after authentication
+function initializeApp() {
+  console.log('• Lac Prototype Initialized:');
+  console.log('• Endpoint:', API_ENDPOINT);
+  messageInput.focus();
+}
+
+lacAuth = createLacAuth(initializeApp);
+lacAuth.initialize();
