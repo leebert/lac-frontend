@@ -1,7 +1,5 @@
 @import "./normalize.css";
 @import "./tokens.css";
-@import url('https://fonts.googleapis.com/css2?family=Sofia+Sans:ital,wght@0,1..1000;1,1..1000&display=swap');
-
 body {
     background-color: var(--color-bg);
     align-items: center;
