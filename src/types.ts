@@ -34,6 +34,7 @@ export interface AgentResponse {
     currentTokens: number;
     maxTokens: number;
     summarizationThreshold: number;
+    summarizationCount: number;
   };
 }
 

@@ -257,8 +257,13 @@ function updateTokenUsage(usage: {
   currentTokens: number;
   maxTokens: number;
   summarizationThreshold: number;
+  summarizationCount: number;
 }) {
-  tokenSummarization.innerHTML = `${usage.remainingBeforeSummarization}% before summarization (${usage.currentTokens.toLocaleString()}/${usage.summarizationThreshold.toLocaleString()} tokens)`;
+  const summarizationInfo = usage.summarizationCount > 0 
+    ? ` (Summarized ${usage.summarizationCount} time${usage.summarizationCount > 1 ? 's' : ''})`
+    : '';
+  
+  tokenSummarization.innerHTML = `${usage.remainingBeforeSummarization}% before summarization (${usage.currentTokens.toLocaleString()}/${usage.summarizationThreshold.toLocaleString()} tokens)${summarizationInfo}`;
   tokenLimit.innerHTML = `${usage.remainingBeforeLimit}% before limit (${usage.currentTokens.toLocaleString()}/${usage.maxTokens.toLocaleString()} tokens)`;
 }
 
