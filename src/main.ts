@@ -66,10 +66,9 @@ async function handleSendMessage() {
     // Update session ID
     sessionId = response.sessionId;
     
-    // Check if response contains an error (for test purposes)
+    // Surface all backend-returned errors in the modal
     if (response.error) {
-      // Show error in chat history instead of modal
-      addMessageToChat('assistant', `⚠️ Error: ${response.error}`);
+      showError(response.error);
     } else {
       // Add agent response to chat
       addMessageToChat('assistant', response.agentMessage);
@@ -127,7 +126,12 @@ async function sendMessageSSE(message: string, onMode: (mode: string) => void): 
         }
         
         return response.json().then(errorData => {
-          throw new Error(errorData.error || `HTTP ${response.status}`);
+          const backendError = errorData?.error;
+          const errorMessage = typeof backendError === 'string'
+            ? backendError
+            : backendError?.message || errorData?.message || `HTTP ${response.status}`;
+
+          throw new Error(errorMessage);
         }).catch(() => {
           throw new Error(`HTTP ${response.status}`);
         });
@@ -204,7 +208,12 @@ function addMessageToChat(role: 'user' | 'assistant', content: string) {
   messageElement.classList.add(role === 'user' ? 'chat-self' : 'chat-agent');
   messageElement.innerHTML = `${role === 'user' ? '' : '<span class="chat-agent-title">Agent</span>'}${escapeHtml(content)}`;
   chatHistory.appendChild(messageElement);
-  chatHistory.scrollTop = chatHistory.scrollHeight;
+  setTimeout(()=>{
+  chatHistory.scrollTo({
+    top: chatHistory.scrollHeight,
+    behavior: 'smooth'
+  });
+}, 150);
 }
 
 function updateTodoList(checklist: ChecklistItem[]) {
@@ -269,7 +278,7 @@ function updateTokenUsage(usage: {
 
 function showError(message: string) {
   errorMessage.textContent = message;
-  errorContainer.style.display = 'fixed';
+  errorContainer.style.display = 'flex';
 }
 
 function hideError() {
