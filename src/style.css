@@ -229,6 +229,10 @@ li div:nth-child(3) {
     transform: scale(0.98);
 }
 
+.modal-buttons {
+    display: none;
+}
+
 /* Password Modal Styles */
 .password-modal {
     position: fixed;
@@ -474,9 +478,13 @@ li div:nth-child(3) {
         gap: calc(var(--padding-main) * 0.5);
     }
 
+    .modal-buttons {
+        display: block;
+    }
+
     /* COLUMN MODE (Default) */
     body.mobile-column-mode .checklist-column {
-        margin-bottom: var(--padding-main);
+        margin-top: var(--padding-main);
     }
 
     body.mobile-column-mode .checklist-column {
