@@ -6,6 +6,11 @@ const API_ENDPOINT = `${import.meta.env.VITE_GOOLGE_CLOUD_URL}/api/message-strea
 let sessionId: string | null = null;
 let lacAuth: ReturnType<typeof createLacAuth> | null = null;
 
+// Mobile responsive state
+let checklistItemCount = 0;
+let layoutMode: 'column' | 'modal' = 'column';
+let checklistCollapsed = true;
+
 // DOM Elements
 const chatHistory = document.getElementById('chat-history') as HTMLDivElement;
 const todoList = document.getElementById('todo-list') as HTMLDivElement;
@@ -20,6 +25,19 @@ const thinkingIndicator = document.createElement('div') as HTMLDivElement;
 thinkingIndicator.classList.add('chat-agent');
 thinkingIndicator.innerHTML = '<span class="chat-agent-title">Agent</span>🤔';
 
+// Mobile responsive elements
+const checklistColumn = document.querySelector('.checklist-column') as HTMLDivElement;
+const checklistHeader = document.querySelector('.checklist-header') as HTMLDivElement;
+const checklistCount = document.getElementById('checklist-count') as HTMLSpanElement;
+const floatingBtn = document.getElementById('floating-checklist-btn') as HTMLButtonElement;
+const floatingCount = document.getElementById('floating-checklist-count') as HTMLSpanElement;
+const checklistModal = document.getElementById('checklist-modal') as HTMLDivElement;
+const checklistModalClose = document.getElementById('checklist-modal-close') as HTMLButtonElement;
+const checklistModalBackdrop = document.querySelector('.checklist-modal-backdrop') as HTMLDivElement;
+const checklistModalList = document.getElementById('checklist-modal-list') as HTMLDivElement;
+const columnButton = document.getElementById('btn-column') as HTMLButtonElement;
+const modalButton = document.getElementById('btn-modal') as HTMLButtonElement;
+
 // Event Listeners
 sendButton.addEventListener('click', handleSendMessage);
 messageInput.addEventListener('keypress', (e) => {
@@ -29,6 +47,14 @@ messageInput.addEventListener('keypress', (e) => {
   }
 });
 errorDismissButton.addEventListener('click', hideError);
+
+// Mobile responsive event listeners
+checklistHeader?.addEventListener('click', toggleChecklistCollapse);
+floatingBtn?.addEventListener('click', openChecklistModal);
+checklistModalClose?.addEventListener('click', closeChecklistModal);
+checklistModalBackdrop?.addEventListener('click', closeChecklistModal);
+columnButton.addEventListener('click', () => switchLayoutMode('column'));
+modalButton.addEventListener('click', () => switchLayoutMode('modal'));
 
 // Functions
 async function handleSendMessage() {
@@ -217,8 +243,14 @@ function addMessageToChat(role: 'user' | 'assistant', content: string) {
 }
 
 function updateTodoList(checklist: ChecklistItem[]) {
+  checklistItemCount = checklist.length;
+  
+  // Update item count badges
+  updateChecklistCounts();
+  
   if (checklist.length === 0) {
     todoList.innerHTML = 'No checklist yet';
+    if (checklistModalList) checklistModalList.innerHTML = 'No checklist yet';
     return;
   }
   
@@ -237,7 +269,7 @@ function updateTodoList(checklist: ChecklistItem[]) {
     low: '#44aa44'
   };
   
-  todoList.innerHTML = '<ul>' + 
+  const listHtml = '<ul>' + 
     checklist.map(item => {
       const emoji = categoryEmojis[item.category] || '📋';
       const color = priorityColors[item.priority] || '#666';
@@ -258,6 +290,9 @@ function updateTodoList(checklist: ChecklistItem[]) {
       `;
     }).join('') + 
     '</ul>';
+  
+  todoList.innerHTML = listHtml;
+  if (checklistModalList) checklistModalList.innerHTML = listHtml;
 }
 
 function updateTokenUsage(usage: { 
@@ -292,11 +327,83 @@ function escapeHtml(text: string): string {
   return div.innerHTML;
 }
 
+// Mobile responsive functions
+const MOBILE_BREAKPOINT = 750;
+
+function isMobileViewport(): boolean {
+  return window.innerWidth <= MOBILE_BREAKPOINT;
+}
+
+function updateChecklistCounts() {
+  const countText = checklistItemCount > 0 ? `(${checklistItemCount})` : '';
+  if (checklistCount) checklistCount.textContent = countText;
+  if (floatingCount) floatingCount.textContent = checklistItemCount.toString();
+}
+
+function toggleChecklistCollapse() {
+  if (!checklistColumn) return;
+  
+  checklistCollapsed = !checklistCollapsed;
+  
+  if (checklistCollapsed) {
+    checklistColumn.classList.add('collapsed');
+  } else {
+    checklistColumn.classList.remove('collapsed');
+  }
+}
+
+function openChecklistModal() {
+  if (checklistModal) {
+    checklistModal.classList.add('visible');
+  }
+}
+
+function closeChecklistModal() {
+  if (checklistModal) {
+    checklistModal.classList.remove('visible');
+  }
+}
+
+function switchLayoutMode(mode: 'column' | 'modal') {
+  layoutMode = mode;
+  
+  // Update body class
+  document.body.classList.remove('mobile-column-mode', 'mobile-modal-mode');
+  document.body.classList.add(`mobile-${mode}-mode`);
+  
+  // Update toggle buttons
+  if(mode === 'column') {
+    columnButton.classList.add('inactive');
+    modalButton.classList.remove('inactive');
+
+  }
+  else {
+    columnButton.classList.remove('inactive');
+    modalButton.classList.add('inactive');
+  }
+}
+
+function handleViewportResize() {
+  if (isMobileViewport()) {
+    switchLayoutMode(layoutMode);
+  } else {
+    document.body.classList.remove('mobile-column-mode', 'mobile-modal-mode');
+    closeChecklistModal();
+  }
+}
+
 // Initialize the app after authentication
 function initializeApp() {
   console.log('• Lac Prototype Initialized:');
   console.log('• Endpoint:', API_ENDPOINT);
   messageInput.focus();
+  
+  addMessageToChat('assistant', '👋 Hello, I\'m LAC. I can help you plan logistical tasks like registering to vote or moving to a new place.');
+
+  handleViewportResize();
+  
+  // Handle viewport resize
+  window.addEventListener('resize', handleViewportResize);
 }
 
 lacAuth = createLacAuth(initializeApp);

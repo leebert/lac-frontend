@@ -4,11 +4,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="apple-touch-icon" sizes="180x180" href="src/assets/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="src/assets/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="src/assets/favicon/favicon-16x16.png">
+  <link rel="manifest" href="src/assets/favicon/site.webmanifest">
   <title>Life Admin Copilot</title>
 </head>
 
 <body>
-  <h1>Life Admin Copilot</h1>
+  <div class="header">
+    <h1>Life Admin Copilot</h1>
+    <button id="btn-column" class="icon-button"><img src="/src/assets/modal.svg" alt="Column"></button>
+    <button id="btn-modal" class="icon-button inactive"><img src="/src/assets/stack.svg" alt="Modal"></button>
+  </div>
 
   <div id="error-container" class="modal-overlay" style="display: none;">
     <div class="modal-content">
@@ -17,26 +25,46 @@
       <button id="error-dismiss-button" class="modal-button">OK</button>
     </div>
   </div>
+  
+  <div id="checklist-modal" class="checklist-modal">
+    <div class="checklist-modal-content">
+      <div class="checklist-modal-header">
+        <h2>Checklist</h2>
+        <button id="checklist-modal-close" class="checklist-modal-close">✕</button>
+      </div>
+      <div id="checklist-modal-list" class="checklist-modal-list"></div>
+    </div>
+  </div>
+
   <main>
 
-    <div class="grid-column">
+    <div class="grid-column conversation-column">
+      <button id="floating-checklist-btn" class="floating-checklist-btn icon-button">
+        <span id="floating-checklist-count">0</span>
+      </button>
       <h2>Conversation</h2>
-    <div id="chat-history"></div>
+      <div id="chat-history"></div>
 
     <div id="input-container">
-      <textarea id="message-input" class="input" placeholder="Ask for guidance on handling logistical tasks like registering to vote" rows="1"></textarea>
-      <button id="send-button"><img src="/src/assets/send.svg" alt="Back"></button>
+      <textarea id="message-input" class="input" rows="1"></textarea>
+      <button id="send-button" class="icon-button"><img src="/src/assets/send.svg" alt="Back"></button>
     </div>
 
     <div class="token-usage">
-      <div id="token-summarization">100% left before summarization</div>
-      <div id="token-limit">100% left before limit</div>
+      <div id="token-summarization">100% before summary</div>
+      <div id="token-limit">100% before limit</div>
     </div>
     </div>
 
 
-    <div class="grid-column">
-      <h2>Checklist</h2>
+    <div class="grid-column checklist-column collapsed">
+      <div class="checklist-header">
+        <div>
+          <h2>Checklist</h2>
+          <span id="checklist-count" class="checklist-count">(0)</span>
+        </div>
+        <img src="/src/assets/norgie.svg" alt="Expand/Collapse Icon">
+      </div>
       <div id="todo-list">Ask for advice to see next steps.</div>
     </div>
   </main>
