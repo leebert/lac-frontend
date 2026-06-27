@@ -71,16 +71,15 @@
     </div>
   </main>
 
-  <div id="password-modal" class="password-modal hidden">
+  <div id="turnstile-modal" class="password-modal hidden">
     <div class="password-modal-content">
-      <h2>Protected Demo</h2>
-      <div class="password-input-container">
-        <input type="password" id="password-input" class="input" placeholder="Password" autocomplete="off" />
-        <button id="password-submit">Submit</button>
-      </div>
-      <div id="password-error" class="password-error hidden"></div>
+      <h2>Just checking you're human…</h2>
+      <p>This quick, automatic check protects the live AI demo from abuse.</p>
+      <div id="turnstile-container"></div>
+      <div id="turnstile-error" class="password-error hidden"></div>
     </div>
   </div>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script type="module" src="/src/main.ts"></script>
 </body>
 

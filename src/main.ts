@@ -2,7 +2,7 @@ import './style.css'
 import { createLacAuth } from './auth.ts';
 import type { AgentResponse, ChecklistItem, MessageRequest } from './types'
 
-const API_ENDPOINT = `${import.meta.env.VITE_GOOLGE_CLOUD_URL}/api/message-stream`;
+const API_ENDPOINT = `${import.meta.env.VITE_GOOGLE_CLOUD_URL}/api/message-stream`;
 let sessionId: string | null = null;
 let lacAuth: ReturnType<typeof createLacAuth> | null = null;
 
